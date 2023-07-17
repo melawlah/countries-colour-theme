@@ -1,15 +1,14 @@
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { styled } from "styled-components";
 
 const BackButton = () => {
     return (
         <BackButtonDiv>
-            {/* <Link>
-                
-            </Link> */}
-            <FaArrowLeft></FaArrowLeft>
-            <button> Back </button>
+            <Link to={'/'}>
+                <FaArrowLeft></FaArrowLeft>
+                <button> Back </button>
+            </Link>
         </BackButtonDiv>
     )
 }
