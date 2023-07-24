@@ -8,12 +8,18 @@ import BackButton from "./BackButton";
 const CountryDetails = () => {
     let params = useParams();
 
-    const [country, setCountry] = useState([]);
+    const [country, setCountry] = useState(undefined);
 
     const getCountry = async (name) => {
         const data = await axios.get(`https://restcountries.com/v3.1/name/${name}`);
-        // console.log(data, "data")
-        setCountry(data.data);
+        const country = data.data[0];
+
+        if(country.borders) {
+            country.borders = await Promise.all(country.borders.map(shortName => 
+                axios.get(`https://restcountries.com/v3.1/alpha/${shortName}`).then(res => res.data[0].name.common)
+            ))
+        }
+        setCountry(country);
     }
 
     useEffect(() => {
@@ -22,89 +28,83 @@ const CountryDetails = () => {
 
     return (
         <div>
-            {/* make back button */}
-            {/* have map detials */}
-            {/* divide map details into two, have picture on one sife and have a grid divided by two on the other side  */}
             <Nav />
             <BackButton />
-            {country.map((info) => {
-                console.log(info, "i want it all")
-               
-                const keys1 = Object.keys(info.languages);
-                const keys2 = Object.keys(info.name.nativeName);
-
-                const commonKeys = keys1.filter(key => keys2.includes(key));
-
-                return(
-                    
+            {
+                !country ? (<></>) : (
                     <div>
-                        <DivContainer>
-                            <div className="grid-item">
-                                <img src={info.flags.png} alt={info.flags.alt} className="flag-image"/>
-                            </div>
-                            <div className="grid-item">
-                                <h4>{info.name.common}</h4>
-                                <div className="grid-container">
-                                    <div>
-                                        <p><b>Native Name:</b> &nbsp; {info.name.nativeName[commonKeys[0]].common} </p>
-                                        <p><b>Population:</b> &nbsp; {parseFloat(info.population).toLocaleString()}</p>
-                                        <p><b>Region:</b> &nbsp; {info.region}</p>
-                                        <p><b>Sub Region:</b> &nbsp; {info.subregion}</p>
-                                        <p><b>Capital:</b> &nbsp; {info.capital[0]}</p>
-                                    </div>
-                                    <div>
-                                        <p><b>Top Level Domain:</b> &nbsp; {info.tld[0]}</p>
-                                        <p><b>Currencies:</b> &nbsp; 
-                                        {
-                                        
-                                         Object.keys(info.currencies).map((currency, index) => {
-                                           
-                                            // <span> {info.currencies[key].name }</span>
-                                            if (index === Object.keys(info.currencies).length - 1) {
-                                               return (
-                                                <span> {info.currencies[currency].name }</span>
-                                               )
-                                              } else {
+                    <DivContainer>
+                        <div className="grid-item">
+                            <img src={country.flags.png} alt={country.flags.alt} className="flag-image"/>
+                        </div>
+                        <div className="grid-item">
+                            <h4>{country.name.common}</h4>
+                            <div className="grid-container">
+                                <div>
+                                    <p><b>Name:</b> &nbsp; {country.name.common} </p>
+                                    <p><b>Population:</b> &nbsp; {parseFloat(country.population).toLocaleString()}</p>
+                                    <p><b>Region:</b> &nbsp; {country.region}</p>
+                                    <p><b>Sub Region:</b> &nbsp; {country.subregion}</p>
+                                    <p><b>Capital:</b> &nbsp; {country.capital[0]}</p>
+                                </div>
+                                <div>
+                                    <p><b>Top Level Domain:</b> &nbsp; {country.tld[0]}</p>
+                                    <p><b>Currencies:</b> &nbsp; 
+                                    {
+                                    
+                                        Object.keys(country.currencies).map((currency, index) => {
+                                        if (index === Object.keys(country.currencies).length - 1) {
+                                            return (
+                                            <span> {country.currencies[currency].name }</span>
+                                            )
+                                            } else {
+                                            return (
+                                                <span> {country.currencies[currency].name },</span>
+                                            )
+                                            }
+                                        })
+                                    }
+                                    </p>
+                                    <p><b>Languages:</b> &nbsp; 
+                                    {
+                                        Object.keys(country.languages).map((key, i) => {
+                                            if (i === Object.keys(country.languages).length - 1) {
                                                 return (
-                                                    <span> {info.currencies[currency].name },</span>
+                                                    <span>{country.languages[key]}</span>
                                                 )
-                                              }
-                                            // <span>{key.name}</span>
-                                            // console.log(info.currencies[key].name, "mental gynamastics owa poju")
-                                            })
-                                        }
-                                        </p>
-                                        {/* <p><b>Languages:</b> &nbsp; {info.capital[0]}</p> */}
-                                        <p><b>Languages:</b>
-                                        {/* {
-                                         (info.capital).map(key => (
-                                            <span> {info.capital[key].name }</span>
-                                            // console.log(info.currencies[key].name, "mental gynamastics owa poju")
-                                         ))
-                                        } */}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="border-countries-div">
-                                    <div>
-                                        <p><b>Border Countries: </b></p> 
-                                    </div>
-                                    <div className="border-countries-button">
-                                        {
-                                            info.borders.map(border =>(
-                                                <span>
-                                                    <button> {border} </button> &nbsp;
-                                                </span>
-                                               
-                                            ))
-                                        }
-                                    </div>
+                                                } else {
+                                                return (
+                                                    <span>{country.languages[key]}, &nbsp; </span> 
+                                                )
+                                            }
+                                        })
+                                    }
+                                    </p>
                                 </div>
                             </div>
-                        </DivContainer>
-                    </div>
+                            {
+                                country.borders ? (
+                                    <div className="border-countries-div">
+                                        <div>
+                                            <p><b>Border Countries: </b></p> 
+                                        </div>
+                                        <div className="border-countries-button">
+                                            {
+                                                country.borders.map(border =>(
+                                                    <span>
+                                                        <button> {border} </button> &nbsp;
+                                                    </span>
+                                                ))
+                                            }
+                                        </div>
+                                    </div>
+                                ) : (<></>)
+                            }
+                        </div>
+                    </DivContainer>
+                </div>
                 )
-            })}
+            }    
         </div>
     )
 }
